@@ -4,6 +4,7 @@ export const DEFAULT_PROFILE = Object.freeze({
   neckRadius: 5.2,
   lipRadius: 5.2,
   height: 22,
+  wallThickness: 0.7,
   sides: 6
 })
 
@@ -151,6 +152,7 @@ function buildProfile(inputNodes) {
         neckRadius: radius,
         lipRadius: radius,
         height: clampNumber(params.height ?? profile.height, 1, 100),
+        wallThickness: clampWallThickness(params.wallThickness ?? profile.wallThickness, radius),
         sides: clampInteger(params.sides ?? profile.sides, 3, 96)
       }
       hasUpstreamProfileSource = true
@@ -165,7 +167,7 @@ function buildProfile(inputNodes) {
     }
 
     if (effect === 'profile') {
-      const keysToApply = hasUpstreamProfileSource ? touchedKeys : ['baseRadius', 'bellyRadius', 'neckRadius', 'lipRadius', 'height']
+      const keysToApply = hasUpstreamProfileSource ? touchedKeys : ['baseRadius', 'bellyRadius', 'neckRadius', 'lipRadius', 'height', 'wallThickness']
       profile = applyProfileParams(profile, params, keysToApply)
       hasUpstreamProfileSource = true
     }
@@ -181,13 +183,21 @@ function applyProfileParams(profile, params, keysToApply) {
     bellyRadius: [1, 60],
     neckRadius: [1, 50],
     lipRadius: [1, 50],
-    height: [1, 100]
+    height: [1, 100],
+    wallThickness: [0.1, 8]
   }
 
   for (const key of keysToApply) {
     if (!(key in clamps)) continue
     nextProfile[key] = clampNumber(params[key] ?? nextProfile[key], clamps[key][0], clamps[key][1])
   }
+
+  nextProfile.wallThickness = clampWallThickness(nextProfile.wallThickness, Math.min(
+    nextProfile.baseRadius,
+    nextProfile.bellyRadius,
+    nextProfile.neckRadius,
+    nextProfile.lipRadius
+  ))
 
   return nextProfile
 }
@@ -375,4 +385,8 @@ function clampNumber(value, min, max) {
   const number = Number(value)
   if (!Number.isFinite(number)) return min
   return Math.min(max, Math.max(min, number))
+}
+
+function clampWallThickness(value, radiusLimit) {
+  return clampNumber(value, 0.1, Math.max(0.1, radiusLimit - 0.1))
 }

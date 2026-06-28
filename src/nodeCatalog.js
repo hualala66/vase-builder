@@ -38,14 +38,16 @@ export const NODE_CATALOG = {
   shape: inputNode('shape', '基础柱体', '基础柱体 Shape', [
     range('sides', '边数', 6, 3, 32, 1),
     range('radius', '半径', 8, 2, 24, 0.5),
-    range('height', '高度', 20, 4, 60, 0.5)
+    range('height', '高度', 20, 4, 60, 0.5),
+    range('wallThickness', '壁厚', 0.7, 0.1, 4, 0.1)
   ]),
   profile: inputNode('profile', '截面轮廓', '截面轮廓 Profile', [
     range('baseRadius', '底部半径', 5.8, 1, 22, 0.1),
     range('bellyRadius', '腹部半径', 10.5, 1, 28, 0.1),
     range('neckRadius', '颈部半径', 4.2, 1, 18, 0.1),
     range('lipRadius', '口沿半径', 5.4, 1, 20, 0.1),
-    range('height', '器身高度', 26, 6, 70, 0.5)
+    range('height', '器身高度', 26, 6, 70, 0.5),
+    range('wallThickness', '壁厚', 0.7, 0.1, 4, 0.1)
   ]),
   preset: inputNode('preset', '器型预设', '器型预设 Preset', [
     select('preset', '器型', 'meiping', [

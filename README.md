@@ -62,8 +62,7 @@ src/
   graphEngine.test.js  # 图计算和几何生成的回归测试
   style.css            # 应用样式
 public/
-  favicon.svg
-  icons.svg
+  favicon.png
 ```
 
 ## 扩展节点

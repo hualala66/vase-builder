@@ -156,6 +156,20 @@ test('touched profile params override preset params one field at a time', () => 
   assert.equal(state.profile.height, 31)
 })
 
+test('profile and shape inputs control wall thickness', () => {
+  const profileState = evaluateGraph([
+    node('profile', 'shape', 0, 'profile', { baseRadius: 5, bellyRadius: 9, neckRadius: 4, lipRadius: 5, height: 24, wallThickness: 1.6 }),
+    node('out', 'export', 300, 'export')
+  ], [edge('profile-out', 'profile', 'out')])
+  const shapeState = evaluateGraph([
+    node('shape', 'shape', 0, 'shape', { radius: 1, height: 12, sides: 8, wallThickness: 5 }),
+    node('out', 'export', 300, 'export')
+  ], [edge('shape-out', 'shape', 'out')])
+
+  assert.equal(profileState.profile.wallThickness, 1.6)
+  assert.equal(shapeState.profile.wallThickness, 0.9)
+})
+
 test('rim, foot, groove and flute modifiers disappear when disconnected', () => {
   const nodes = [
     node('profile', 'shape', 0, 'profile', { baseRadius: 5, bellyRadius: 10, neckRadius: 4, lipRadius: 5, height: 25 }),
@@ -201,6 +215,31 @@ test('seed keeps wobble geometry stable and changes when seed changes', () => {
   assert.notDeepEqual(sameA, different)
 })
 
+test('vase geometry is hollow and open at the top', () => {
+  const radialSegments = 12
+  const heightSegments = 8
+  const height = 24
+  const wallThickness = 1.2
+  const nodes = [
+    node('profile', 'shape', 0, 'profile', { baseRadius: 5, bellyRadius: 9, neckRadius: 4, lipRadius: 6, height, wallThickness }),
+    node('resolution', 'shape', 60, 'resolution', { radialSegments, heightSegments }),
+    node('out', 'export', 300, 'export')
+  ]
+  const edges = [
+    edge('profile-resolution', 'profile', 'resolution'),
+    edge('resolution-out', 'resolution', 'out')
+  ]
+  const state = evaluateGraph(nodes, edges)
+  const { geometry } = buildVaseBufferGeometry(state)
+  const positions = geometry.attributes.position.array
+  const outerTopIndex = heightSegments * radialSegments
+  const innerTopIndex = ((heightSegments + 1) * radialSegments) + ((heightSegments - 1) * radialSegments)
+
+  assert.equal(geometry.attributes.position.count, ((heightSegments + 1) * radialSegments) + (heightSegments * radialSegments) + 2)
+  assert.equal(hasVertexAt(positions, 0, height / 2, 0), false)
+  assert.equal(Number((radiusAtIndex(positions, outerTopIndex) - radiusAtIndex(positions, innerTopIndex)).toFixed(2)), wallThickness)
+})
+
 test('disconnected material nodes do not affect preview material', () => {
   const nodes = [
     node('profile', 'shape', 0, 'profile', { baseRadius: 5, bellyRadius: 9, neckRadius: 4, lipRadius: 5, height: 24 }),
@@ -227,6 +266,25 @@ test('every catalog node can participate in an active chain without breaking geo
 
 function samplePositions(geometry) {
   return Array.from(geometry.attributes.position.array.slice(0, 30)).map((value) => Number(value.toFixed(4)))
+}
+
+function radiusAtIndex(positions, index) {
+  const offset = index * 3
+  return Math.hypot(positions[offset], positions[offset + 2])
+}
+
+function hasVertexAt(positions, x, y, z) {
+  for (let index = 0; index < positions.length; index += 3) {
+    if (
+      Math.abs(positions[index] - x) < 0.0001 &&
+      Math.abs(positions[index + 1] - y) < 0.0001 &&
+      Math.abs(positions[index + 2] - z) < 0.0001
+    ) {
+      return true
+    }
+  }
+
+  return false
 }
 
 function createSmokeNodes(item) {

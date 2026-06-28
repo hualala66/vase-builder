@@ -18,11 +18,25 @@ export function buildVaseBufferGeometry(engineState) {
   const profile = engineState.profile
   const radialSegments = Math.max(6, Math.round(engineState.resolution.radialSegments))
   const heightSegments = Math.max(8, Math.round(engineState.resolution.heightSegments))
+  const wallThickness = clampNumber(
+    profile.wallThickness ?? 0.7,
+    0.1,
+    Math.max(0.1, Math.min(profile.baseRadius, profile.bellyRadius, profile.neckRadius, profile.lipRadius) - 0.1)
+  )
+  const innerStartYIndex = 1
   const positions = []
   const colors = []
   const uvs = []
   const indices = []
-  const rings = []
+  const outerRings = []
+  const innerRings = []
+
+  const addVertex = (point, u, t, radialIndex, yIndex) => {
+    positions.push(point.x, point.y, point.z)
+    uvs.push(u, t)
+    colors.push(...createVertexColor(t, radialIndex, yIndex, engineState))
+    return (positions.length / 3) - 1
+  }
 
   for (let yIndex = 0; yIndex <= heightSegments; yIndex += 1) {
     const t = yIndex / heightSegments
@@ -33,26 +47,64 @@ export function buildVaseBufferGeometry(engineState) {
       const u = radialIndex / radialSegments
       const point = createProfilePoint(t, u, y, profile, engineState)
 
-      positions.push(point.x, point.y, point.z)
-      uvs.push(u, t)
-      colors.push(...createVertexColor(t, radialIndex, yIndex, engineState))
-      ring.push((positions.length / 3) - 1)
+      ring.push(addVertex(point, u, t, radialIndex, yIndex))
     }
 
-    rings.push(ring)
+    outerRings.push(ring)
+  }
+
+  for (let yIndex = innerStartYIndex; yIndex <= heightSegments; yIndex += 1) {
+    const t = yIndex / heightSegments
+    const y = (t - 0.5) * profile.height
+    const ring = []
+
+    for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
+      const u = radialIndex / radialSegments
+      const point = createProfilePoint(t, u, y, profile, engineState, -wallThickness)
+
+      ring.push(addVertex(point, u, t, radialIndex, yIndex))
+    }
+
+    innerRings.push(ring)
   }
 
   for (let yIndex = 0; yIndex < heightSegments; yIndex += 1) {
     for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
       const nextRadialIndex = (radialIndex + 1) % radialSegments
-      const a = rings[yIndex][radialIndex]
-      const b = rings[yIndex][nextRadialIndex]
-      const c = rings[yIndex + 1][nextRadialIndex]
-      const d = rings[yIndex + 1][radialIndex]
+      const a = outerRings[yIndex][radialIndex]
+      const b = outerRings[yIndex][nextRadialIndex]
+      const c = outerRings[yIndex + 1][nextRadialIndex]
+      const d = outerRings[yIndex + 1][radialIndex]
 
       indices.push(a, b, d)
       indices.push(b, c, d)
     }
+  }
+
+  for (let ringIndex = 0; ringIndex < innerRings.length - 1; ringIndex += 1) {
+    for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
+      const nextRadialIndex = (radialIndex + 1) % radialSegments
+      const a = innerRings[ringIndex][radialIndex]
+      const b = innerRings[ringIndex][nextRadialIndex]
+      const c = innerRings[ringIndex + 1][nextRadialIndex]
+      const d = innerRings[ringIndex + 1][radialIndex]
+
+      indices.push(a, d, b)
+      indices.push(b, d, c)
+    }
+  }
+
+  const topOuterRing = outerRings[heightSegments]
+  const topInnerRing = innerRings[innerRings.length - 1]
+  for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
+    const nextRadialIndex = (radialIndex + 1) % radialSegments
+    const outerA = topOuterRing[radialIndex]
+    const outerB = topOuterRing[nextRadialIndex]
+    const innerA = topInnerRing[radialIndex]
+    const innerB = topInnerRing[nextRadialIndex]
+
+    indices.push(outerA, outerB, innerA)
+    indices.push(outerB, innerB, innerA)
   }
 
   const bottomCenter = positions.length / 3
@@ -60,15 +112,22 @@ export function buildVaseBufferGeometry(engineState) {
   uvs.push(0.5, 0)
   colors.push(...createVertexColor(0, 0, 0, engineState))
 
-  const topCenter = positions.length / 3
-  positions.push(0, profile.height / 2, 0)
-  uvs.push(0.5, 1)
-  colors.push(...createVertexColor(1, 0, heightSegments, engineState))
-
   for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
     const nextRadialIndex = (radialIndex + 1) % radialSegments
-    indices.push(bottomCenter, rings[0][radialIndex], rings[0][nextRadialIndex])
-    indices.push(topCenter, rings[heightSegments][nextRadialIndex], rings[heightSegments][radialIndex])
+    indices.push(bottomCenter, outerRings[0][radialIndex], outerRings[0][nextRadialIndex])
+  }
+
+  const innerBottomT = innerStartYIndex / heightSegments
+  const innerBottomY = (innerBottomT - 0.5) * profile.height
+  const innerBottomCenter = positions.length / 3
+  positions.push(0, innerBottomY, 0)
+  uvs.push(0.5, innerBottomT)
+  colors.push(...createVertexColor(innerBottomT, 0, innerStartYIndex, engineState))
+
+  const innerBottomRing = innerRings[0]
+  for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
+    const nextRadialIndex = (radialIndex + 1) % radialSegments
+    indices.push(innerBottomCenter, innerBottomRing[nextRadialIndex], innerBottomRing[radialIndex])
   }
 
   const geometry = new THREE.BufferGeometry()
@@ -81,7 +140,7 @@ export function buildVaseBufferGeometry(engineState) {
   return { geometry }
 }
 
-function createProfilePoint(t, u, y, profile, engineState) {
+function createProfilePoint(t, u, y, profile, engineState, radiusOffset = 0) {
   let angle = u * Math.PI * 2
   let radius = radiusAt(t, profile)
   let xOffset = 0
@@ -186,13 +245,19 @@ function createProfilePoint(t, u, y, profile, engineState) {
     }
   }
 
-  radius = Math.max(0.05, radius)
+  radius = Math.max(0.05, radius + radiusOffset)
 
   return {
     x: Math.cos(angle) * radius + xOffset,
     y: localY,
     z: Math.sin(angle) * radius + zOffset
   }
+}
+
+function clampNumber(value, min, max) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return min
+  return Math.min(max, Math.max(min, number))
 }
 
 function radiusAt(t, profile) {

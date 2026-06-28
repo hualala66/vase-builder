@@ -50,6 +50,7 @@
 
         <template #node-shape="props">
           <div class="custom-node icon-node border-input" :class="nodeStateClass(props)" :style="nodeWidthStyle(props.data)">
+            <Handle type="target" position="left" />
             <div class="node-title node-drag-handle bg-input">
               <span class="node-title-copy">
                 <strong>{{ props.data.shortLabel }}</strong>
@@ -349,6 +350,80 @@ function iconPaths(name) {
     ],
     flute: [
       { tag: 'path', attrs: { d: 'M6 4c1.5 3 1.5 13 0 16M10 4c1.5 3 1.5 13 0 16M14 4c1.5 3 1.5 13 0 16M18 4c1.5 3 1.5 13 0 16' } }
+    ],
+    twist: [
+      { tag: 'path', attrs: { d: 'M8 4c7 2 7 6 0 8s-7 6 0 8' } },
+      { tag: 'path', attrs: { d: 'M16 4c-7 2-7 6 0 8s7 6 0 8' } }
+    ],
+    scale: [
+      { tag: 'path', attrs: { d: 'M8 8h8v8H8z' } },
+      { tag: 'path', attrs: { d: 'M4 4l4 4M20 4l-4 4M4 20l4-4M20 20l-4-4' } }
+    ],
+    wave: [
+      { tag: 'path', attrs: { d: 'M4 9c2.7-3 5.3-3 8 0s5.3 3 8 0' } },
+      { tag: 'path', attrs: { d: 'M4 15c2.7-3 5.3-3 8 0s5.3 3 8 0' } }
+    ],
+    meshify: [
+      { tag: 'path', attrs: { d: 'M5 5h14v14H5z' } },
+      { tag: 'path', attrs: { d: 'M5 10h14M5 14h14M10 5v14M14 5v14' } }
+    ],
+    taper: [
+      { tag: 'path', attrs: { d: 'M7 4h10M9 20h6M7 4l2 16M17 4l-2 16' } }
+    ],
+    bend: [
+      { tag: 'path', attrs: { d: 'M10 4c6 4 6 12 0 16' } },
+      { tag: 'path', attrs: { d: 'M6 4c6 4 6 12 0 16' } }
+    ],
+    bevel: [
+      { tag: 'path', attrs: { d: 'M8 4h8l4 4v8l-4 4H8l-4-4V8z' } },
+      { tag: 'path', attrs: { d: 'M8 4v4H4M16 4v4h4M8 20v-4H4M16 20v-4h4' } }
+    ],
+    bulge: [
+      { tag: 'path', attrs: { d: 'M9 4c-3 5-3 11 0 16M15 4c3 5 3 11 0 16' } },
+      { tag: 'path', attrs: { d: 'M8 12h8' } }
+    ],
+    noise: [
+      { tag: 'path', attrs: { d: 'M5 7l3 2 2-4 3 5 2-3 4 2' } },
+      { tag: 'path', attrs: { d: 'M5 16l2-3 3 4 2-5 3 4 4-3' } }
+    ],
+    spiral: [
+      { tag: 'path', attrs: { d: 'M12 19c4 0 7-3 7-7s-3-7-7-7-6 2.5-6 5.5S8.5 16 12 16s4-2 4-4-1.5-3-3.5-3' } }
+    ],
+    wobble: [
+      { tag: 'path', attrs: { d: 'M9 4c2 2 0 4 2 6s4 2 2 5 0 4 2 5' } },
+      { tag: 'path', attrs: { d: 'M15 4c-2 2 0 4-2 6s-4 2-2 5 0 4-2 5' } }
+    ],
+    facet: [
+      { tag: 'path', attrs: { d: 'M12 3l7 4v10l-7 4-7-4V7z' } },
+      { tag: 'path', attrs: { d: 'M12 3v18M5 7l7 4 7-4' } }
+    ],
+    clay: [
+      { tag: 'path', attrs: { d: 'M7 18c0-3.5 2-6 5-6s5 2.5 5 6' } },
+      { tag: 'path', attrs: { d: 'M5 18h14M8 12c.7-3 2-5 4-7 2 2 3.3 4 4 7' } }
+    ],
+    glaze: [
+      { tag: 'path', attrs: { d: 'M12 3c3 3.5 5 6.5 5 10a5 5 0 0 1-10 0c0-3.5 2-6.5 5-10z' } },
+      { tag: 'path', attrs: { d: 'M9 14c1.5 1 4.5 1 6 0' } }
+    ],
+    gradientGlaze: [
+      { tag: 'path', attrs: { d: 'M7 5h10v14H7z' } },
+      { tag: 'path', attrs: { d: 'M7 10h10M7 15h10' } }
+    ],
+    speckles: [
+      { tag: 'circle', attrs: { cx: 8, cy: 8, r: 1 } },
+      { tag: 'circle', attrs: { cx: 15, cy: 7, r: 1 } },
+      { tag: 'circle', attrs: { cx: 12, cy: 13, r: 1 } },
+      { tag: 'circle', attrs: { cx: 17, cy: 16, r: 1 } },
+      { tag: 'path', attrs: { d: 'M6 19c3-2 9-2 12 0' } }
+    ],
+    crackle: [
+      { tag: 'path', attrs: { d: 'M6 4l3 5-2 4 4 7' } },
+      { tag: 'path', attrs: { d: 'M14 4l-2 5 4 3-2 8' } },
+      { tag: 'path', attrs: { d: 'M9 9l5 3M7 13l-3 3M16 12l4 2' } }
+    ],
+    material: [
+      { tag: 'path', attrs: { d: 'M12 4l7 4v8l-7 4-7-4V8z' } },
+      { tag: 'path', attrs: { d: 'M12 4v8l7-4M12 12l-7-4M12 12v8' } }
     ],
     export: [
       { tag: 'path', attrs: { d: 'M12 4v10' } },
@@ -1237,31 +1312,32 @@ function clampNumber(value, min, max) {
 
 .node-width-resizer {
   position: absolute;
-  top: 8px;
-  right: -5px;
-  bottom: 8px;
-  width: 9px;
-  cursor: ew-resize;
-  border-radius: 999px;
-  z-index: 4;
+  right: -8px;
+  bottom: -8px;
+  width: 22px;
+  height: 22px;
+  cursor: nwse-resize;
+  border-radius: 7px;
+  z-index: 3;
 }
 
 .node-width-resizer::after {
   content: '';
   position: absolute;
-  top: 42%;
-  right: 2px;
-  width: 3px;
-  height: 28px;
-  border-radius: 999px;
-  background: #303846;
-  opacity: 0.52;
+  right: 7px;
+  bottom: 7px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #56627a;
+  border-bottom: 2px solid #56627a;
+  border-radius: 1px;
+  opacity: 0.58;
   transition: opacity 0.2s, transform 0.2s;
 }
 
 .custom-node:hover .node-width-resizer::after {
   opacity: 0.9;
-  transform: scaleX(1.3);
+  transform: translate(1px, 1px);
 }
 
 .control-row {
@@ -1376,11 +1452,20 @@ select {
 }
 
 :deep(.vue-flow__handle) {
-  width: 9px;
-  height: 9px;
+  width: 11px;
+  height: 11px;
   border: 1px solid #4b5565;
   background: #0b0d12;
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.65);
+  z-index: 8;
+  transition: background 0.16s, border-color 0.16s, box-shadow 0.16s, transform 0.16s;
+}
+
+:deep(.vue-flow__handle:hover) {
+  background: var(--accent-green);
+  border-color: #dfffe7;
+  box-shadow: 0 0 0 4px rgba(95, 224, 122, 0.18), 0 0 12px rgba(95, 224, 122, 0.65);
+  transform: scale(1.16);
 }
 
 :deep(.vue-flow__controls) {
